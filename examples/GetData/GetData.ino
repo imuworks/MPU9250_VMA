@@ -1,19 +1,28 @@
+
+//=============================================================================//
+//includes and defines
+
 #include <MPU9250_asukiaaa.h>
 
 #ifdef _ESP32_HAL_I2C_H_
-#define SDA_PIN 26
-#define SCL_PIN 25
+  #define SDA_PIN 26
+  #define SCL_PIN 25
 #endif
+
+//=============================================================================//
+//global objects and variables
 
 MPU9250 mySensor;
 
 uint8_t sensorId;
 float aX, aY, aZ, aSqrt, gX, gY, gZ, mDirection, mX, mY, mZ;
 
+//=============================================================================//
+
 void setup() {
   while(!Serial);
   Serial.begin(115200);
-  Serial.println("started");
+  Serial.println("Serial established.");
 
 #ifdef _ESP32_HAL_I2C_H_ // For ESP32
   Wire.begin(SDA_PIN, SCL_PIN); // SDA, SCL
@@ -33,6 +42,8 @@ void setup() {
 
   sensorId = mySensor.readId();
 }
+
+//=============================================================================//
 
 void loop() {
   Serial.println("sensorId: " + String(sensorId));
@@ -69,3 +80,5 @@ void loop() {
   Serial.println(""); // Add an empty line
   delay(500);
 }
+
+//=============================================================================//
