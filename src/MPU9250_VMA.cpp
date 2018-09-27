@@ -8,14 +8,14 @@
 //                                                                             //
 //  Filename : MPU9250_VMA.cpp                                                 //
 //  Description : main file of the library.                                    //
-//  Library version : 1.4.5                                                    //
+//  Library version : 1.4.6                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 5:47:36 PM, 27-09-2018, Thursday               //
+//  File last modified : +05:30 6:39:44 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 
@@ -81,7 +81,7 @@ void MPU9250::magReadAdjustValues() {
   magSetMode(VAL_MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
   magSetMode(VAL_MAG_MODE_FUSEROM); //adjustment data can only be read in fuse mode
   uint8_t dataBuffer[3];
-  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_ASAX, 3, dataBuffer); //read from the factory written ROM
+  i2cRead(AK8963_SLAVE_ADDRESS, REG_MAG_ASAX, 3, dataBuffer); //read from the factory written ROM
   magXAdjust = dataBuffer[0];
   magYAdjust = dataBuffer[1];
   magZAdjust = dataBuffer[2];
@@ -104,7 +104,7 @@ void MPU9250::beginMag(uint8_t operationMode, uint8_t outputLength) {
 //sets the operation mode of the AK8963 magnetometer
 
 void MPU9250::magSetMode(uint8_t operationMode) {
-  i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, operationMode); //set the mode only and reset the output length to 14-bit
+  i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_MAG_CNTL1, operationMode); //set the mode only and reset the output length to 14-bit
   delay(10);
 }
 
@@ -112,10 +112,10 @@ void MPU9250::magSetMode(uint8_t operationMode) {
 
 void MPU9250::magSetMode(uint8_t operationMode, uint8_t outputLength) {
   if(outputLength == 14) {
-    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, (operationMode & VAL_MAG_14BIT_OUT_A));
+    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_MAG_CNTL1, (operationMode & VAL_MAG_14BIT_OUT_A));
   }
   else {
-    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, (operationMode | VAL_MAG_16BIT_OUT_O));
+    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_MAG_CNTL1, (operationMode | VAL_MAG_16BIT_OUT_O));
   }
 
   delay(10);
@@ -125,7 +125,7 @@ void MPU9250::magSetMode(uint8_t operationMode, uint8_t outputLength) {
 //read the magnetometer sesnor data
 
 void MPU9250::readMag() {
-  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_HXL, 7, magBuffer); //why 7 because we need to read the ST2 register inorder initiate another data acquisition cycle
+  i2cRead(AK8963_SLAVE_ADDRESS, REG_MAG_HXL, 7, magBuffer); //why 7 because we need to read the ST2 register inorder initiate another data acquisition cycle
 }
 
 //=============================================================================//
@@ -306,15 +306,15 @@ float MPU9250::gyroZ() {
 //=============================================================================//
 //initializes the offset and sensitivity values for temperature sensor
 
-void MPU9250::beginTemp(float o = 0.0, float s = 1.0) {
-  roomTempOffset = o;
-  tempSensitivity = s;
+void MPU9250::beginTemp(float offset, float sensitivity) {
+  roomTempOffset = offset;
+  tempSensitivity = sensitivity;
 }
 
 //=============================================================================//
 //reads the temperature data from the sensor
 
-float MPU9250::readTemp() {
+void MPU9250::readTemp() {
   i2cRead(address, REG_TEMP_OUT_H, 2, tempBuffer);
 }
 

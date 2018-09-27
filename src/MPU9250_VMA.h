@@ -8,14 +8,14 @@
 //                                                                             //
 //  Filename : MPU9250_VMA.h                                                   //
 //  Description : header file of the library.                                  //
-//  Library version : 1.4.5                                                    //
+//  Library version : 1.4.6                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 5:47:24 PM, 27-09-2018, Thursday               //
+//  File last modified : +05:30 6:39:23 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 
@@ -61,7 +61,7 @@
 
 //magnetometer defines
 #define AK8963_SLAVE_ADDRESS             0x0C  //slave addresses
-#define REG_MAG_WHOAMI                   0x00
+#define REG_AK8963_WHOAMI                0x00
 #define REG_MAG_HXL                      0x03  //X-axis data
 #define REG_MAG_HYL                      0x05  //Y-axis data
 #define REG_MAG_HZL                      0x07  //Y-axis data
@@ -79,7 +79,7 @@
 #define VAL_MAG_MODE_FUSEROM             0xF
 
 //following values need to combined with other values
-#define VAL_MAG_16BIT_OUT_O              0x0A  //OR operate this with CNTL1 register
+#define VAL_MAG_16BIT_OUT_O              0x10  //OR operate this with CNTL1 register
 #define VAL_MAG_14BIT_OUT_A              0xEF  //AND operate this with CNTL1 register
 
 //=============================================================================//
@@ -115,14 +115,14 @@ class MPU9250 {
 
     void beginMag(uint8_t operationMode = VAL_MAG_MODE_CONTINUOUS_8HZ, uint8_t outputLength = 16); //initializes the AK8963 in continuous mode
     void magSetMode(uint8_t operationMode); //set the operation mode only and reset output length to 14-bit
-    void magSetMode(uint8_t operationMode, outputLength); //set the operation mode and output length
+    void magSetMode(uint8_t operationMode, uint8_t outputLength); //set the operation mode and output length
     void readMag(); //reads the magnetometer data
     float magX(); //returns the final raw X axis value
     float magY(); //returns the final raw Y axis value
     float magZ(); //returns the final raw Z axis value
     float magHorizDirection(); //converts the magnetometer values to horizontal rotation
 
-    void beginTemp(float o = VAL_TEMP_ROOM_OFFSET, float s = VAL_TEMP_SENSITIVITY); //default offset and sensitivity as per datasheet
+    void beginTemp(float offset = VAL_TEMP_ROOM_OFFSET, float sensitivity = VAL_TEMP_SENSITIVITY); //default offset and sensitivity as per datasheet
     void readTemp(); //reads the temperature registers of sensor
     float getTemp(); //returns formatted temperature in Celsius
 
