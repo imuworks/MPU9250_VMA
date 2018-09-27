@@ -3,14 +3,14 @@
 //  This program reads the accelerometer, gyro, magnetometer and temperature   //
 //  data from the sensor. Sensors are initialized with default values.         //
 //                                                                             //
-//  Library version : 1.4.4                                                    //
+//  Library version : 1.4.5                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 2:57:58 PM, 27-09-2018, Thursday               //
+//  File last modified : +05:30 5:47:48 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 //includes and defines
