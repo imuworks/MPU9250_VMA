@@ -8,14 +8,14 @@
 //                                                                             //
 //  Filename : MPU9250_asukiaa.h                                               //
 //  Description : header file of the library.                                  //
-//  Library version :                                                          //
+//  Library version : 1.2                                                      //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 7:37:47 PM, 25-09-2018, Tuesday                //
+//  File last modified : +05:30 12:16:28 PM, 27-09-2018, Thursday              //
 //                                                                             //
 //=============================================================================//
 
@@ -44,6 +44,8 @@
 #define REG_GYRO_YOUT_H                  0x45
 #define REG_GYRO_ZOUT_H                  0x47
 
+#define REG_TEMP_OUT_H                   0x41
+
 //MPU6050 register values
 #define VAL_ACCEL_FULL_SCALE_2_G         0x00
 #define VAL_ACCEL_FULL_SCALE_4_G         0x08
@@ -57,7 +59,7 @@
 
 //magnetometer defines
 #define AK8963_SLAVE_ADDRESS             0x0C  //slave addresses
-#define REG_AK8963_WHOAMI                0x00  
+#define REG_AK8963_WHOAMI                0x00
 #define REG_AK8963_HXL                   0x03  //X-axis data
 #define REG_AK8963_HYL                   0x05  //Y-axis data
 #define REG_AK8963_HZL                   0x07  //Y-axis data
@@ -78,8 +80,9 @@
 class MPU9250 {
   public:
     int16_t magXOffset, magYOffset, magZOffset;
+    float roomTempOffset, tempSensitivity;
 
-    MPU9250(uint8_t address = MPU9250_ADDRESS_AD0_LOW):
+    MPU9250(uint8_t address = MPU9250_SLAVE_ADDRESS_LOW):
       address(address),
       accelRange(0),
       gyroRange(0),
@@ -88,44 +91,49 @@ class MPU9250 {
       magZOffset(0) {}; //initialize all to 0s
 
     void setWire(TwoWire *wire); //lets you custom wire object
-    uint8_t readId(); //returns device signature
+    uint8_t readId(uint8_t slaveAddress = MPU9250_SLAVE_ADDRESS_LOW); //returns device signature
 
-    void beginAccel(uint8_t mode = ACC_FULL_SCALE_16_G); //set the full scale range of the accel
-    void accelRead(); //reads the accelerometer data
+    void beginAccel(uint8_t mode = VAL_ACCEL_FULL_SCALE_16_G); //set the full scale range of the accel
+    void readAccel(); //reads the accelerometer data
     float accelX(); //returns the final raw X axis value
     float accelY(); //returns the final raw Y axis value
     float accelZ(); //returns the final raw Z axis value
     float accelSqrt();
 
-    void beginGyro(uint8_t mode = GYRO_FULL_SCALE_2000_DPS); //set the full scale range of gyro
-    void gyroRead(); //reads the gyro sensor data
+    void beginGyro(uint8_t mode = VAL_GYRO_FULL_SCALE_2000_DPS); //set the full scale range of gyro
+    void readGyro(); //reads the gyro sensor data
     float gyroX(); //retuns the final raw X axis value
     float gyroY(); //returns the final raw Y axis value
     float gyroZ(); //returns the final raw Z axis value
 
-    void beginMag(uint8_t mode = MAG_MODE_CONTINUOUS_8HZ); //initializes the AK8963 in continuous mode
+    void beginMag(uint8_t mode = VAL_MAG_MODE_CONTINUOUS_8HZ); //initializes the AK8963 in continuous mode
     void magSetMode(uint8_t mode); //set the operation mode
-    void magRead(); //reads the magnetometer data
+    void readMag(); //reads the magnetometer data
     float magX(); //returns the final raw X axis value
     float magY(); //returns the final raw Y axis value
     float magZ(); //returns the final raw Z axis value
     float magHorizDirection(); //converts the magnetometer values to horizontal rotation
 
+    void beginTemp(float o = 0.0, float s = 1.0);
+    float readTemp(); //reads the temperature registers of sensor
+    float getTemp(); //returns formatted temperature in Celsius
+
   private:
     TwoWire* myWire; //pointer to custom Wire object
     uint8_t address; //I2C slave address
+    uint8_t tempBuffer[2]; //buffer for temperature values
     uint8_t accelBuffer[6]; //buffer for accel data
     float accelRange; //full scale range of accelerometer
     uint8_t gyroBuffer[6]; //buffer for gyro data
     float gyroRange; //full range scale of gyro
     uint8_t magBuffer[7]; //buffer for magnetometer data
     uint8_t magXAdjust, magYAdjust, magZAdjust; //factory set adjustment values
-    float accelRead(uint8_t highIndex, uint8_t lowIndex); //formats the 8-bit data into proper 16-bit values and returns the final value
-    float gyroRead(uint8_t highIndex, uint8_t lowIndex); //same as above
-    int16_t magRead(uint8_t highIndex, uint8_t lowIndex); //same as above
+    float getAccel(uint8_t highIndex, uint8_t lowIndex); //formats the 8-bit data into proper 16-bit values and returns the final value
+    float getGyro(uint8_t highIndex, uint8_t lowIndex); //same as above
+    int16_t getMag(uint8_t highIndex, uint8_t lowIndex); //same as above
     void magReadAdjustValues(); //read the factory set adjustment values from the magnetometer
-    void i2cRead(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t* Data); //reads n bytes from the salve to an 8-bit array buffer
-    void i2cWriteByte(uint8_t Address, uint8_t Register, uint8_t Data); //writes a single byte to the slave
+    void i2cRead(uint8_t slaveAddress, uint8_t Register, uint8_t Nbytes, uint8_t* Data); //reads n bytes from the salve to an 8-bit array buffer
+    void i2cWriteByte(uint8_t slaveAddress, uint8_t Register, uint8_t Data); //writes a single byte to the slave
 };
 
 //=============================================================================//

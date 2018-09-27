@@ -8,14 +8,14 @@
 //                                                                             //
 //  Filename : MPU9250_asukiaa.cpp                                             //
 //  Description : main file of the library.                                    //
-//  Library version :                                                          //
+//  Library version : 1.2                                                      //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 7:37:47 PM, 25-09-2018, Tuesday                //
+//  File last modified : +05:30 12:15:46 PM, 27-09-2018, Thursday              //
 //                                                                             //
 //=============================================================================//
 
@@ -59,7 +59,7 @@ void MPU9250::setWire(TwoWire* wire) {
 //=============================================================================//
 //reads the sensor IDs and info bytes
 
-uint8_t MPU9250::readId(uint8_t slaveAddress = MPU9250_SLAVE_ADDRESS_LOW) {
+uint8_t MPU9250::readId(uint8_t slaveAddress) {
   uint8_t id;
   if(slaveAddress == MPU9250_SLAVE_ADDRESS_LOW) {
     i2cRead(slaveAddress, REG_MPU9250_WHOAMI, 1, &id); //returns 0x71 or 113
@@ -78,10 +78,10 @@ uint8_t MPU9250::readId(uint8_t slaveAddress = MPU9250_SLAVE_ADDRESS_LOW) {
 //use the equation givn in the datasheet to calculate
 
 void MPU9250::magReadAdjustValues() {
-  magSetMode(MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
-  magSetMode(MAG_MODE_FUSEROM); //adjustment data can only be read in fuse mode
+  magSetMode(VAL_MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
+  magSetMode(VAL_MAG_MODE_FUSEROM); //adjustment data can only be read in fuse mode
   uint8_t dataBuffer[3];
-  i2cRead(AK8963_SLAVE_ADDRESS, AK8963_RA_ASAX, 3, dataBuffer); //read from the factory written ROM
+  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_ASAX, 3, dataBuffer); //read from the factory written ROM
   magXAdjust = dataBuffer[0];
   magYAdjust = dataBuffer[1];
   magZAdjust = dataBuffer[2];
@@ -95,7 +95,7 @@ void MPU9250::beginMag(uint8_t mode) {
   delay(10);
 
   magReadAdjustValues();
-  magSetMode(MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
+  magSetMode(VAL_MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
   magSetMode(mode); //enter specific mode
   delay(10);
 }
@@ -104,21 +104,21 @@ void MPU9250::beginMag(uint8_t mode) {
 //sets the operation mode of the AK8963 magnetometer
 
 void MPU9250::magSetMode(uint8_t mode) {
-  i2cWriteByte(AK8963_SLAVE_ADDRESS, AK8963_RA_CNTL, mode);
+  i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL, mode);
   delay(10);
 }
 
 //=============================================================================//
 //read the magnetometer sesnor data
 
-void MPU9250::magRead() {
-  i2cRead(AK8963_SLAVE_ADDRESS, AK8963_RA_HXL, 7, magBuffer);
+void MPU9250::readMag() {
+  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_HXL, 7, magBuffer);
 }
 
 //=============================================================================//
 //formats the 8-bit values in the buffer to proper 16 bit ones
 
-int16_t MPU9250::magGet(uint8_t highIndex, uint8_t lowIndex) {
+int16_t MPU9250::getMag(uint8_t highIndex, uint8_t lowIndex) {
   return (((int16_t) magBuffer[highIndex]) << 8) | magBuffer[lowIndex];
 }
 
@@ -134,21 +134,21 @@ float adjustMagValue(int16_t value, uint8_t adjust) {
 //returns the final magnetometer X value
 
 float MPU9250::magX() {
-  return adjustMagValue(magGet(1, 0), magXAdjust) + magXOffset; //you can add your custom offsets
+  return adjustMagValue(getMag(1, 0), magXAdjust) + magXOffset; //you can add your custom offsets
 }
 
 //=============================================================================//
 //returns the final magnetometer Y value
 
 float MPU9250::magY() {
-  return adjustMagValue(magGet(3, 2), magYAdjust) + magYOffset;
+  return adjustMagValue(getMag(3, 2), magYAdjust) + magYOffset;
 }
 
 //=============================================================================//
 //returns the final magnetometer Z value
 
 float MPU9250::magZ() {
-  return adjustMagValue(magGet(5, 4), magZAdjust) + magZOffset;
+  return adjustMagValue(getMag(5, 4), magZAdjust) + magZOffset;
 }
 
 //=============================================================================//
@@ -165,38 +165,38 @@ float MPU9250::magHorizDirection() {
 
 void MPU9250::beginAccel(uint8_t mode) {
   switch(mode) {
-    case ACC_FULL_SCALE_2_G:
+    case VAL_ACCEL_FULL_SCALE_2_G:
       accelRange = 2.0; //reset value
       break;
-    case ACC_FULL_SCALE_4_G:
+    case VAL_ACCEL_FULL_SCALE_4_G:
       accelRange = 4.0;
       break;
-    case ACC_FULL_SCALE_8_G:
+    case VAL_ACCEL_FULL_SCALE_8_G:
       accelRange = 8.0;
       break;
-    case ACC_FULL_SCALE_16_G:
+    case VAL_ACCEL_FULL_SCALE_16_G:
       accelRange = 16.0;
       break;
     default:
       return; // Return without writing invalid mode
   }
 
-  i2cWriteByte(address, ACCEL_RA_CONFIG, mode); //write to register
+  i2cWriteByte(address, REG_ACCEL_CONFIG, mode); //write to register
   delay(10);
 }
 
 //=============================================================================//
 //reads the accelerometer values to the buffer
 
-void MPU9250::accelRead() {
-  i2cRead(address, ACCEL_RA_XOUT_H, 6, accelBuffer); //read the accelerometer values
+void MPU9250::readAccel() {
+  i2cRead(address, REG_ACCEL_XOUT_H, 6, accelBuffer); //read the accelerometer values
 }
 
 //=============================================================================//
 //formats the 8-bit values in the buffer to proper 16-bit values
 
-float MPU9250::accelGet(uint8_t highIndex, uint8_t lowIndex) {
-  int16_t v = - (accelBuf[highIndex] << 8 | accelBuf[lowIndex]);
+float MPU9250::getAccel(uint8_t highIndex, uint8_t lowIndex) {
+  int16_t v = - ((accelBuffer[highIndex] << 8) | accelBuffer[lowIndex]);
   return ((float) v) * accelRange / (float) 0x8000; // (float) 0x8000 == 32768.0
 }
 
@@ -204,29 +204,29 @@ float MPU9250::accelGet(uint8_t highIndex, uint8_t lowIndex) {
 //returns the final X axis value
 
 float MPU9250::accelX() {
-  return accelGet(0, 1);
+  return getAccel(0, 1);
 }
 
 //=============================================================================//
 //returns the final Y axis value
 
 float MPU9250::accelY() {
-  return accelGet(2, 3);
+  return getAccel(2, 3);
 }
 
 //=============================================================================//
 //returns the final Z axis value
 
 float MPU9250::accelZ() {
-  return accelGet(4, 5);
+  return getAccel(4, 5);
 }
 
 //=============================================================================//
 
 float MPU9250::accelSqrt() {
-  return sqrt(pow(accelGet(0, 1), 2) +
-              pow(accelGet(2, 3), 2) +
-              pow(accelGet(4, 5), 2));
+  return sqrt(pow(getAccel(0, 1), 2) +
+              pow(getAccel(2, 3), 2) +
+              pow(getAccel(4, 5), 2));
 }
 
 //=============================================================================//
@@ -234,16 +234,16 @@ float MPU9250::accelSqrt() {
 
 void MPU9250::beginGyro(uint8_t mode) {
   switch (mode) {
-    case GYRO_FULL_SCALE_250_DPS:
+    case VAL_GYRO_FULL_SCALE_250_DPS:
       gyroRange = 250.0;
       break;
-    case GYRO_FULL_SCALE_500_DPS:
+    case VAL_GYRO_FULL_SCALE_500_DPS:
       gyroRange = 500.0;
       break;
-    case GYRO_FULL_SCALE_1000_DPS:
+    case VAL_GYRO_FULL_SCALE_1000_DPS:
       gyroRange = 1000.0;
       break;
-    case GYRO_FULL_SCALE_2000_DPS:
+    case VAL_GYRO_FULL_SCALE_2000_DPS:
       gyroRange = 2000.0;
       break;
     default:
@@ -257,15 +257,15 @@ void MPU9250::beginGyro(uint8_t mode) {
 //=============================================================================//
 //reads the gyro values to the buffer
 
-void MPU9250::gyroRead() {
+void MPU9250::readGyro() {
   i2cRead(address, REG_GYRO_XOUT_H, 6, gyroBuffer);
 }
 
 //=============================================================================//
 //formats the 8-bit data into proper 16-bit values and returns the final gyro value
 
-float MPU9250::gyroGet(uint8_t highIndex, uint8_t lowIndex) {
-  int16_t v = - (gyroBuf[highIndex] << 8 | gyroBuf[lowIndex]);
+float MPU9250::getGyro(uint8_t highIndex, uint8_t lowIndex) {
+  int16_t v = - ((gyroBuffer[highIndex] << 8) | gyroBuffer[lowIndex]);
   return ((float) v) * gyroRange / (float) 0x8000;
 }
 
@@ -273,21 +273,44 @@ float MPU9250::gyroGet(uint8_t highIndex, uint8_t lowIndex) {
 //returns the final values for X axis
 
 float MPU9250::gyroX() {
-  return gyroGet(0, 1);
+  return getGyro(0, 1);
 }
 
 //=============================================================================//
 //returns the final value for Y axis
 
 float MPU9250::gyroY() {
-  return gyroGet(2, 3);
+  return getGyro(2, 3);
 }
 
 //=============================================================================//
 //returns the final vlaue of Z axis
 
 float MPU9250::gyroZ() {
-  return gyroGet(4, 5);
+  return getGyro(4, 5);
+}
+
+//=============================================================================//
+//initializes the offset and sensitivity values for temperature sensor
+
+void MPU9250::beginTemp(float o = 0.0, float s = 1.0) {
+  roomTempOffset = o;
+  tempSensitivity = s;
+}
+
+//=============================================================================//
+//reads the temperature data from the sensor
+
+float MPU9250::readTemp() {
+  i2cRead(address, REG_TEMP_OUT_H, 2, tempBuffer);
+}
+
+//=============================================================================//
+//returns temperature in degrees celsius
+
+float MPU9250::getTemp() {
+  int16_t t = ((tempBuffer[0] << 8) | tempBuffer[1]);
+  return ((((float) t) - roomTempOffset) / tempSensitivity) + 21.0;
 }
 
 //=============================================================================//
