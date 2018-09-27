@@ -113,7 +113,7 @@ class MPU9250 {
     float gyroY(); //returns the final raw Y axis value
     float gyroZ(); //returns the final raw Z axis value
 
-    void beginMag(uint8_t operationMode = VAL_MAG_MODE_CONTINUOUS_8HZ, outputLength = 16); //initializes the AK8963 in continuous mode
+    void beginMag(uint8_t operationMode = VAL_MAG_MODE_CONTINUOUS_8HZ, uint8_t outputLength = 16); //initializes the AK8963 in continuous mode
     void magSetMode(uint8_t operationMode); //set the operation mode only and reset output length to 14-bit
     void magSetMode(uint8_t operationMode, outputLength); //set the operation mode and output length
     void readMag(); //reads the magnetometer data
@@ -123,7 +123,7 @@ class MPU9250 {
     float magHorizDirection(); //converts the magnetometer values to horizontal rotation
 
     void beginTemp(float o = VAL_TEMP_ROOM_OFFSET, float s = VAL_TEMP_SENSITIVITY); //default offset and sensitivity as per datasheet
-    float readTemp(); //reads the temperature registers of sensor
+    void readTemp(); //reads the temperature registers of sensor
     float getTemp(); //returns formatted temperature in Celsius
 
   private:
