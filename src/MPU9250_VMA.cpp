@@ -6,20 +6,20 @@
 //  forked myself, this library lets you read the sensor data from MPU6050     //
 //  and AK8963.                                                                //
 //                                                                             //
-//  Filename : MPU9250_asukiaa.cpp                                             //
+//  Filename : MPU9250_VMA.cpp                                                 //
 //  Description : main file of the library.                                    //
-//  Library version : 1.2                                                      //
+//  Library version : 1.4.4                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 12:15:46 PM, 27-09-2018, Thursday              //
+//  File last modified : +05:30 2:57:47 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 
-#include "MPU9250_asukiaaa.h"
+#include "MPU9250_VMA.h"
 #include <math.h>
 
 //=============================================================================//
@@ -74,7 +74,7 @@ uint8_t MPU9250::readId(uint8_t slaveAddress) {
 }
 
 //=============================================================================//
-//reads the factroy set adjustment values from the magnetometer.
+//reads the factory set adjustment values from the magnetometer.
 //use the equation givn in the datasheet to calculate
 
 void MPU9250::magReadAdjustValues() {
@@ -90,21 +90,34 @@ void MPU9250::magReadAdjustValues() {
 //=============================================================================//
 //initializes the magnetometer with specific mode
 
-void MPU9250::beginMag(uint8_t mode) {
+void MPU9250::beginMag(uint8_t operationMode, uint8_t outputLength) {
   i2cWriteByte(address, 0x37, 0x02); //IDK why you need to do this when you can access the AK8963 directly
   delay(10);
 
   magReadAdjustValues();
   magSetMode(VAL_MAG_MODE_POWERDOWN); //first transit to power down mode in case if it is not already
-  magSetMode(mode); //enter specific mode
+  magSetMode(operationMode, outputLength); //enter specific mode
   delay(10);
 }
 
 //=============================================================================//
 //sets the operation mode of the AK8963 magnetometer
 
-void MPU9250::magSetMode(uint8_t mode) {
-  i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL, mode);
+void MPU9250::magSetMode(uint8_t operationMode) {
+  i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, operationMode); //set the mode only and reset the output length to 14-bit
+  delay(10);
+}
+
+//-----------------------------------------------------------------------------//
+
+void MPU9250::magSetMode(uint8_t operationMode, uint8_t outputLength) {
+  if(outputLength == 14) {
+    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, (operationMode & VAL_MAG_14BIT_OUT_A));
+  }
+  else {
+    i2cWriteByte(AK8963_SLAVE_ADDRESS, REG_AK8963_CNTL1, (operationMode | VAL_MAG_16BIT_OUT_O));
+  }
+
   delay(10);
 }
 
@@ -112,7 +125,7 @@ void MPU9250::magSetMode(uint8_t mode) {
 //read the magnetometer sesnor data
 
 void MPU9250::readMag() {
-  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_HXL, 7, magBuffer);
+  i2cRead(AK8963_SLAVE_ADDRESS, REG_AK8963_HXL, 7, magBuffer); //why 7 because we need to read the ST2 register inorder initiate another data acquisition cycle
 }
 
 //=============================================================================//
@@ -310,7 +323,7 @@ float MPU9250::readTemp() {
 
 float MPU9250::getTemp() {
   int16_t t = ((tempBuffer[0] << 8) | tempBuffer[1]);
-  return ((((float) t) - roomTempOffset) / tempSensitivity) + 21.0;
+  return ((((float) t) - roomTempOffset) / tempSensitivity) + 21.0; //default offset and sensitivity are given in the datasheet
 }
 
 //=============================================================================//

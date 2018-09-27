@@ -1,5 +1,7 @@
-# MPU9250_asukiaaa
-A library to read value of MPU9250.
+# MPU9250_VMA
+Originally developed by "Asuki Kono" https://github.com/asukiaaa, later forked myself, this library lets you read the sensor data from MPU6050 and AK8963.
+
+MPU9250 is a 9-axis or 9 Degrees of Freedom (9 DOF) Inertial Measurement Unit IC from InventSense which incorporates 3-axis accelerometer, 3-axis gyro and a 3-axis magnetometer. The accelerometer and gyro are the same as the MPU6050 (6 DOF) sensor while the MPU9250 embeds an additional 3-axis magnetometer AK8963 from Asahi Kasei Microdevices (AKM) in a single package. AK8963 can be bought as a single IC.
 
 # Installation
 You can install to Arduino IDE with using library manager.
@@ -9,7 +11,7 @@ You can install to Arduino IDE with using library manager.
 3. Select and install this project.
 
 # Connection
-For uno, nano and so on.
+For boards such as Arduino Uno, Nano etc,
 
 | Arduino | MPU9250 |
 |---------|---------|
@@ -21,11 +23,12 @@ For uno, nano and so on.
 For other boards, please check [i2c pin assign](https://www.arduino.cc/en/Reference/Wire).
 
 # Usage
-You can see all function on [example project](https://github.com/asukiaaa/MPU9250_asukiaaa/blob/master/examples/GetData/GetData.ino).
+Demonstration of basic functions can be found in the example [example project](https://github.com/asukiaaa/MPU9250_asukiaaa/blob/master/examples/GetData/GetData.ino).
 
 ## Accelerometer
+MPU6050 has a 3-axis accelerometer with 16-bit output with selectable ranges up to ±16g.
 ```c
-#include <MPU9250_asukiaaa.h>
+#include <MPU9250_VMA.h>
 MPU9250 mySensor;
 float aX, aY, aZ, aSqrt;
 
@@ -36,18 +39,21 @@ void setup() {
 }
 
 void loop() {
-  mySensor.accelUpdate();
-  aX = mySensor.accelX();
+  mySensor.readAccel(); //reads the sensor data
+  aX = mySensor.accelX(); //returns 16-bit axis specific value
   aY = mySensor.accelY();
   aZ = mySensor.accelZ();
   aSqrt = mySensor.accelSqrt();
+
   // Do what you want
 }
 ```
 
 ## Gyrometer
+MPU6050 has a 3-axis gyroscope with 16-bit output code with selectable ranges up to ±2000 °/S.
+
 ```c
-#include <MPU9250_asukiaaa.h>
+#include <MPU9250_VMA.h>
 MPU9250 mySensor;
 float gX, gY, gZ;
 
@@ -58,17 +64,19 @@ void setup() {
 }
 
 void loop() {
-  mySensor.gyroUpdate();
-  gX = mySensor.gyroX();
+  mySensor.readGyro(); //reads the sensor data
+  gX = mySensor.gyroX(); //returns 16-bit axis specific value
   gY = mySensor.gyroY();
   gZ = mySensor.gyroZ();
+
   // Do what you want
 }
 ```
 
 ## Magnetometer
+AK8963 is a 3-axis magnetometer or compass with 14-bit (0.6 μT/LSB typ) or 16-bit 90.15μT/LSB typ) selectable output and works based on hall effect. Default operation mode is continuous measurement at 8Hz and output length is 16-bit.
 ```c
-#include <MPU9250_asukiaaa.h>
+#include <MPU9250_VMA.h>
 MPU9250 mySensor;
 float mDirection;
 uint16_t mX, mY, mZ;
@@ -80,12 +88,12 @@ void setup() {
 }
 
 void loop() {
-  Serial.begin(115200);
-  mySensor.magUpdate();
-  mX = mySensor.magX();
+  mySensor.readMag(); //reads the sensor data
+  mX = mySensor.magX(); //returns 16-bit axis specific value
   mY = mySensor.magY();
   mZ = mySensor.magZ();
   mDirection = mySensor.magHorizDirection();
+
   // Do what you want
 }
 ```
@@ -97,7 +105,7 @@ Name | Max | Min
 magX |  70 | -30
 maxY | 110 |  10
 
-You can calcurate offset values like this.
+You can calculate offset values like this.
 
 ```
 maxXOffset = - (magXMax + magXMin) / 2
@@ -134,6 +142,29 @@ After setting offset value, you can get `magHorizDirection` as you expected.
 Warning: Offset value changes by temperature or some reason. If you want to get high accuracy value, you should recheck the offset value.
 
 Example about auto calibration (calculating offset values) is [here](https://github.com/asukiaaa/MPU9250_asukiaaa/blob/master/examples/GetMagOffset/GetMagOffset.ino).
+
+## Temperature Sensor
+
+The temperature sensor outputs digital value of the die temperature. This can be used for temperature compensation.
+
+```c
+#include <MPU9250_VMA.h>
+MPU9250 mySensor;
+float dieTemp;
+
+void setup() {
+  Wire.begin();
+  mySensor.setWire(&Wire);
+  mySensor.beginTemp();
+}
+
+void loop() {
+  mySensor.readTemp(); //reads the sensor data
+  dieTemp = mySensor.getTemp(); //returns temperature in °C
+
+  // Do what you want
+}
+```
 
 ## With customizable Wire
 For ESP8266, ESP32 and so on.

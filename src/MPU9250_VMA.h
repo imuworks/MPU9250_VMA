@@ -6,21 +6,21 @@
 //  forked myself, this library lets you read the sensor data from MPU6050     //
 //  and AK8963.                                                                //
 //                                                                             //
-//  Filename : MPU9250_asukiaa.h                                               //
+//  Filename : MPU9250_VMA.h                                                   //
 //  Description : header file of the library.                                  //
-//  Library version : 1.2                                                      //
+//  Library version : 1.4.4                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 12:16:28 PM, 27-09-2018, Thursday              //
+//  File last modified : +05:30 2:57:34 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 
-#ifndef MPU9250_ASUKIAAA_H
-#define MPU9250_ASUKIAAA_H
+#ifndef MPU9250_VMA_H
+#define MPU9250_VMA_H
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -45,6 +45,8 @@
 #define REG_GYRO_ZOUT_H                  0x47
 
 #define REG_TEMP_OUT_H                   0x41
+#define VAL_TEMP_ROOM_OFFSET             0.0
+#define VAL_TEMP_SENSITIVITY             333.7
 
 //MPU6050 register values
 #define VAL_ACCEL_FULL_SCALE_2_G         0x00
@@ -59,12 +61,13 @@
 
 //magnetometer defines
 #define AK8963_SLAVE_ADDRESS             0x0C  //slave addresses
-#define REG_AK8963_WHOAMI                0x00
-#define REG_AK8963_HXL                   0x03  //X-axis data
-#define REG_AK8963_HYL                   0x05  //Y-axis data
-#define REG_AK8963_HZL                   0x07  //Y-axis data
-#define REG_AK8963_CNTL                  0x0A  //control register
-#define REG_AK8963_ASAX                  0x10  //X-axis sensitivity adjustment
+#define REG_MAG_WHOAMI                   0x00
+#define REG_MAG_HXL                      0x03  //X-axis data
+#define REG_MAG_HYL                      0x05  //Y-axis data
+#define REG_MAG_HZL                      0x07  //Y-axis data
+#define REG_MAG_CNTL1                    0x0A  //control register
+#define REG_MAG_CNTL2                    0x0B  //control register
+#define REG_MAG_ASAX                     0x10  //X-axis sensitivity adjustment
 
 //magenetometer register vlaues
 #define VAL_MAG_MODE_POWERDOWN           0x0
@@ -75,12 +78,16 @@
 #define VAL_MAG_MODE_SELFTEST            0x8
 #define VAL_MAG_MODE_FUSEROM             0xF
 
+//following values need to combined with other values
+#define VAL_MAG_16BIT_OUT_O              0x0A  //OR operate this with CNTL1 register
+#define VAL_MAG_14BIT_OUT_A              0xEF  //AND operate this with CNTL1 register
+
 //=============================================================================//
 
 class MPU9250 {
   public:
     int16_t magXOffset, magYOffset, magZOffset;
-    float roomTempOffset, tempSensitivity;
+    float roomTempOffset, tempSensitivity; //default offset and sensitivity are given in the datasheet
 
     MPU9250(uint8_t address = MPU9250_SLAVE_ADDRESS_LOW):
       address(address),
@@ -106,15 +113,16 @@ class MPU9250 {
     float gyroY(); //returns the final raw Y axis value
     float gyroZ(); //returns the final raw Z axis value
 
-    void beginMag(uint8_t mode = VAL_MAG_MODE_CONTINUOUS_8HZ); //initializes the AK8963 in continuous mode
-    void magSetMode(uint8_t mode); //set the operation mode
+    void beginMag(uint8_t operationMode = VAL_MAG_MODE_CONTINUOUS_8HZ, outputLength = 16); //initializes the AK8963 in continuous mode
+    void magSetMode(uint8_t operationMode); //set the operation mode only and reset output length to 14-bit
+    void magSetMode(uint8_t operationMode, outputLength); //set the operation mode and output length
     void readMag(); //reads the magnetometer data
     float magX(); //returns the final raw X axis value
     float magY(); //returns the final raw Y axis value
     float magZ(); //returns the final raw Z axis value
     float magHorizDirection(); //converts the magnetometer values to horizontal rotation
 
-    void beginTemp(float o = 0.0, float s = 1.0);
+    void beginTemp(float o = VAL_TEMP_ROOM_OFFSET, float s = VAL_TEMP_SENSITIVITY); //default offset and sensitivity as per datasheet
     float readTemp(); //reads the temperature registers of sensor
     float getTemp(); //returns formatted temperature in Celsius
 

@@ -3,19 +3,19 @@
 //  This program reads the accelerometer, gyro, magnetometer and temperature   //
 //  data from the sensor. Sensors are initialized with default values.         //
 //                                                                             //
-//  Library version : 1.2                                                      //
+//  Library version : 1.4.4                                                    //
 //  Author : Vishnu M Aiea (Original author : Asuki Kono)                      //
 //  Source : https://github.com/vishnumaiea/MPU9250_asukiaaa                   //
 //  Author's Website : www.vishnumaiea.in                                      //
 //  Initial release : +05:30 7:37:12 PM, 25-09-2018, Tuesday                   //
 //  License : MIT                                                              //
 //                                                                             //
-//  File last modified : +05:30 12:17:18 PM, 27-09-2018, Thursday              //
+//  File last modified : +05:30 2:57:58 PM, 27-09-2018, Thursday               //
 //                                                                             //
 //=============================================================================//
 //includes and defines
 
-#include "MPU9250_asukiaaa.h"
+#include "MPU9250_VMA.h"
 
 #ifdef _ESP32_HAL_I2C_H_
   #define SDA_PIN 26
