@@ -20,7 +20,7 @@ For boards such as Arduino Uno, Nano etc,
 | A5(SCL) | SCL     |
 | GND     | GND     |
 
-For other boards, please check [i2c pin assign](https://www.arduino.cc/en/Reference/Wire).
+For other boards, please check [I2C pin assign](https://www.arduino.cc/en/Reference/Wire).
 
 # Usage
 Demonstration of basic functions can be found in the example [example project](https://github.com/vishnumaiea/MPU9250_VMA/blob/master/examples/GetData/GetData.ino).
