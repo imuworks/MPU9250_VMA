@@ -23,7 +23,7 @@ For boards such as Arduino Uno, Nano etc,
 For other boards, please check [i2c pin assign](https://www.arduino.cc/en/Reference/Wire).
 
 # Usage
-Demonstration of basic functions can be found in the example [example project](https://github.com/asukiaaa/MPU9250_asukiaaa/blob/master/examples/GetData/GetData.ino).
+Demonstration of basic functions can be found in the example [example project](https://github.com/vishnumaiea/MPU9250_VMA/blob/master/examples/GetData/GetData.ino).
 
 ## Concept
 The concept of this library can be described in four steps.
@@ -222,7 +222,7 @@ Returns the formatted values of magnetic strengths of each axis.
 This returns the horizontal direction in degrees that you can use as a compass.
 
 ```c
-7. float getAccel(uint8_t highIndex, uint8_t lowIndex);
+7. float getMag(uint8_t highIndex, uint8_t lowIndex);
 ```
 Converts the 8-bit values in the buffer to proper 16-bit values.
 
@@ -269,7 +269,7 @@ After setting offset values, the `magHorizDirection` will return more accurate o
 
 Warning: Offset values change by temperature or some reason. If you need high accuracy values, you should recheck the offset value.
 
-Example about auto calibration (calculating offset values) is [here](https://github.com/asukiaaa/MPU9250_asukiaaa/blob/master/examples/GetMagOffset/GetMagOffset.ino).
+Example about auto calibration (calculating offset values) is [here](https://github.com/vishnumaiea/MPU9250_VMA/blob/master/examples/GetMagOffset/GetMagOffset.ino).
 
 ## Temperature Sensor
 
